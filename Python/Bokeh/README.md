@@ -5,6 +5,6 @@ JavaScript, отображаемые в веб-браузере.
 На основе кода Python Bokeh автоматически генерирует весь необходимый код
 JavaScript и HTML.
 
-1 Creating a line chart - Создание линейной диаграммы
+потбор цветов https://www.w3.org/TR/css-color-4/#named-colors
 
 
