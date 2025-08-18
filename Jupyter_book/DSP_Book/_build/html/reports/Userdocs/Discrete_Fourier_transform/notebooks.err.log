@@ -1,0 +1,144 @@
+Traceback (most recent call last):
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\site-packages\jupyter_cache\executors\utils.py", line 58, in single_nb_execution
+    executenb(
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\site-packages\nbclient\client.py", line 1305, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\site-packages\jupyter_core\utils\__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\asyncio\base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\site-packages\nbclient\client.py", line 705, in async_execute
+    await self.async_execute_cell(
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\site-packages\nbclient\client.py", line 1058, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "C:\Users\nkalashnikov\AppData\Local\anaconda3\Lib\site-packages\nbclient\client.py", line 914, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
+# Параметры сигнала
+N = 64  # Количество точек
+Fs = 1000  # Частота дискретизации (Гц)
+t = np.arange(N) / Fs  # Временная шкала
+
+# Создание тестового сигнала (сумма трёх гармоник)
+freqs = [10, 30, 60]  # Частоты компонент (Гц)
+amps = [1.0, 0.6, 0.3]  # Амплитуды
+signal = np.zeros(N)
+for freq, amp in zip(freqs, amps):
+    signal += amp * np.sin(2 * np.pi * freq * t)
+    signal += 0.8 * amp * np.cos(2 * np.pi * freq * t)  # Добавляем косинусоидальные компоненты
+
+# Прямое дискретное преобразование Фурье (DFT)
+dft_result = np.zeros(N, dtype=complex)
+for k in range(N):
+    for n in range(N):
+        angle = -2 * np.pi * k * n / N
+        dft_result[k] += signal[n] * (np.cos(angle) + 1j * np.sin(angle))
+
+# Вычисление амплитуд и фаз
+amplitudes = np.abs(dft_result) / N
+phases = np.angle(dft_result)
+
+# Восстановление сигнала через обратное DFT
+reconstructed = np.zeros(N)
+components = []
+
+for k in range(N):
+    # Создаем комплексную экспоненту для текущей частоты
+    comp_real = np.zeros(N)
+    comp_imag = np.zeros(N)
+    
+    for n in range(N):
+        angle = 2 * np.pi * k * n / N
+        comp_real[n] = np.cos(angle) * dft_result[k].real / N
+        comp_imag[n] = np.sin(angle) * dft_result[k].imag / N
+    
+    # Сохраняем компоненты
+    components.append((comp_real, comp_imag))
+    reconstructed += comp_real + comp_imag
+
+# Визуализация
+plt.figure(figsize=(16, 12))
+gs = GridSpec(4, 2)
+
+# Исходный и восстановленный сигнал
+ax0 = plt.subplot(gs[0, :])
+ax0.plot(t, signal, 'b-', linewidth=2, label='Исходный сигнал')
+ax0.plot(t, reconstructed, 'r--', linewidth=1.5, label='Восстановленный')
+ax0.set_title('Исходный и восстановленный сигнал')
+ax0.set_xlabel('Время (с)')
+ax0.set_ylabel('Амплитуда')
+ax0.legend()
+ax0.grid(True)
+
+# Выборка ключевых компонент для визуализации
+key_components = [0, 10, 30, 60]  # Нулевая, 10 Гц, 30 Гц, 60 Гц
+colors = ['red', 'green', 'blue', 'purple']
+titles = ['Постоянная составляющая (DC)', 'Компонента 10 Гц', 'Компонента 30 Гц', 'Компонента 60 Гц']
+
+for i, (comp_idx, color, title) in enumerate(zip(key_components, colors, titles)):
+    ax = plt.subplot(gs[i+1, 0])
+    comp_real, comp_imag = components[comp_idx]
+    
+    ax.plot(t, comp_real, 'g-', label=f'Косинусная ({amplitudes[comp_idx]:.2f})')
+    ax.plot(t, comp_imag, 'b-', label=f'Синусная ({amplitudes[comp_idx]:.2f})')
+    ax.plot(t, comp_real + comp_imag, 'm--', label='Сумма')
+    
+    ax.set_title(title)
+    ax.set_xlabel('Время (с)')
+    ax.set_ylabel('Амплитуда')
+    ax.legend()
+    ax.grid(True)
+    ax.set_ylim(-0.5, 0.5)
+
+# Амплитудный спектр
+ax_last = plt.subplot(gs[1:, 1])
+freqs = np.arange(N) * Fs / N
+ax_last.stem(freqs[:N//2], amplitudes[:N//2], 'b-', markerfmt='bo', basefmt=' ')
+ax_last.set_title('Амплитудный спектр сигнала')
+ax_last.set_xlabel('Частота (Гц)')
+ax_last.set_ylabel('Амплитуда')
+ax_last.grid(True)
+ax_last.set_xlim(0, Fs/2)
+
+plt.tight_layout()
+plt.show()
+------------------
+
+
+[1;31m---------------------------------------------------------------------------[0m
+[1;31mIndexError[0m                                Traceback (most recent call last)
+Cell [1;32mIn[1], line 67[0m
+[0;32m     64[0m titles [38;5;241m=[39m [[38;5;124m'[39m[38;5;124mПостоянная составляющая (DC)[39m[38;5;124m'[39m, [38;5;124m'[39m[38;5;124mКомпонента 10 Гц[39m[38;5;124m'[39m, [38;5;124m'[39m[38;5;124mКомпонента 30 Гц[39m[38;5;124m'[39m, [38;5;124m'[39m[38;5;124mКомпонента 60 Гц[39m[38;5;124m'[39m]
+[0;32m     66[0m [38;5;28;01mfor[39;00m i, (comp_idx, color, title) [38;5;129;01min[39;00m [38;5;28menumerate[39m([38;5;28mzip[39m(key_components, colors, titles)):
+[1;32m---> 67[0m     ax [38;5;241m=[39m plt[38;5;241m.[39msubplot(gs[i[38;5;241m+[39m[38;5;241m1[39m, [38;5;241m0[39m])
+[0;32m     68[0m     comp_real, comp_imag [38;5;241m=[39m components[comp_idx]
+[0;32m     70[0m     ax[38;5;241m.[39mplot(t, comp_real, [38;5;124m'[39m[38;5;124mg-[39m[38;5;124m'[39m, label[38;5;241m=[39m[38;5;124mf[39m[38;5;124m'[39m[38;5;124mКосинусная ([39m[38;5;132;01m{[39;00mamplitudes[comp_idx][38;5;132;01m:[39;00m[38;5;124m.2f[39m[38;5;132;01m}[39;00m[38;5;124m)[39m[38;5;124m'[39m)
+
+File [1;32m~\AppData\Local\anaconda3\Lib\site-packages\matplotlib\gridspec.py:242[0m, in [0;36mGridSpecBase.__getitem__[1;34m(self, key)[0m
+[0;32m    239[0m     [38;5;28;01mexcept[39;00m [38;5;167;01mValueError[39;00m [38;5;28;01mas[39;00m err:
+[0;32m    240[0m         [38;5;28;01mraise[39;00m [38;5;167;01mValueError[39;00m([38;5;124m"[39m[38;5;124mUnrecognized subplot spec[39m[38;5;124m"[39m) [38;5;28;01mfrom[39;00m [38;5;21;01merr[39;00m
+[0;32m    241[0m     num1, num2 [38;5;241m=[39m np[38;5;241m.[39mravel_multi_index(
+[1;32m--> 242[0m         [_normalize(k1, nrows, [38;5;241m0[39m), _normalize(k2, ncols, [38;5;241m1[39m)],
+[0;32m    243[0m         (nrows, ncols))
+[0;32m    244[0m [38;5;28;01melse[39;00m:  [38;5;66;03m# Single key[39;00m
+[0;32m    245[0m     num1, num2 [38;5;241m=[39m _normalize(key, nrows [38;5;241m*[39m ncols, [38;5;28;01mNone[39;00m)
+
+File [1;32m~\AppData\Local\anaconda3\Lib\site-packages\matplotlib\gridspec.py:230[0m, in [0;36mGridSpecBase.__getitem__.<locals>._normalize[1;34m(key, size, axis)[0m
+[0;32m    228[0m     [38;5;28;01mreturn[39;00m key, key
+[0;32m    229[0m [38;5;28;01melif[39;00m axis [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+[1;32m--> 230[0m     [38;5;28;01mraise[39;00m [38;5;167;01mIndexError[39;00m([38;5;124mf[39m[38;5;124m"[39m[38;5;124mindex [39m[38;5;132;01m{[39;00morig_key[38;5;132;01m}[39;00m[38;5;124m is out of bounds for [39m[38;5;124m"[39m
+[0;32m    231[0m                      [38;5;124mf[39m[38;5;124m"[39m[38;5;124maxis [39m[38;5;132;01m{[39;00maxis[38;5;132;01m}[39;00m[38;5;124m with size [39m[38;5;132;01m{[39;00msize[38;5;132;01m}[39;00m[38;5;124m"[39m)
+[0;32m    232[0m [38;5;28;01melse[39;00m:  [38;5;66;03m# flat index[39;00m
+[0;32m    233[0m     [38;5;28;01mraise[39;00m [38;5;167;01mIndexError[39;00m([38;5;124mf[39m[38;5;124m"[39m[38;5;124mindex [39m[38;5;132;01m{[39;00morig_key[38;5;132;01m}[39;00m[38;5;124m is out of bounds for [39m[38;5;124m"[39m
+[0;32m    234[0m                      [38;5;124mf[39m[38;5;124m"[39m[38;5;124mGridSpec with size [39m[38;5;132;01m{[39;00msize[38;5;132;01m}[39;00m[38;5;124m"[39m)
+
+[1;31mIndexError[0m: index 4 is out of bounds for axis 0 with size 4
+

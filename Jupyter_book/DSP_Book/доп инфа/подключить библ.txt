@@ -1,0 +1,52 @@
+Чтобы хранить функции в отдельной библиотеке и использовать их в разных файлах .ipynb, выполните следующие шаги:
+
+1. Создайте структуру пакета
+text
+DSP_Book/
+├── dsp_lib/                  # Директория пакета
+│   ├── __init__.py           # Пустой файл для инициализации пакета
+│   └── signal_generators.py  # Файл с функциями
+├── Userdocs/
+│   ├── Discrete_Fourier_transform/
+│   │   └── notebooks.ipynb
+│   └── Src/
+│       └── ...
+
+2. Поместите функции в signal_generators.py
+python
+# signal_generators.py
+import numpy as np
+
+def gen_sin(amplitude: float, frequency: float, phase: float, n_samples: int) -> np.ndarray:
+    n = np.arange(n_samples)
+    return amplitude * np.sin(2 * np.pi * frequency * n + phase)
+
+def gen_cos(amplitude: float, frequency: float, phase: float, n_samples: int) -> np.ndarray:
+    n = np.arange(n_samples)
+    return amplitude * np.cos(2 * np.pi * frequency * n + phase)
+
+3. Установите пакет локально
+Создайте файл setup.py в корне проекта:
+
+python
+# setup.py
+from setuptools import setup, find_packages
+
+setup(
+    name='dsp_lib',
+    version='0.1.0',
+    packages=find_packages(),
+    install_requires=['numpy'],
+)
+Установите пакет в режиме разработки:
+
+bash
+pip install -e /path/to/DSP_Book
+
+4. Импортируйте функции в Jupyter Notebook
+python
+# В любой ячейке notebooks.ipynb
+from dsp_lib.signal_generators import gen_sin, gen_cos
+
+# Пример использования
+signal = gen_sin(amplitude=1.0, frequency=0.05, phase=0, n_samples=100)
