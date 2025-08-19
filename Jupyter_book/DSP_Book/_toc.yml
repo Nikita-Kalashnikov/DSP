@@ -5,8 +5,8 @@ root: intro
 chapters:
 - file: markdown
   sections:
-  - file: Userdocs/Discrete_Fourier_transform/beginning_dft
-  - file: Userdocs/Discrete_Fourier_transform/notebooks
+  - file: Userdocs/Discrete_Fourier_transform/beginning_dft.md
+  - file: Userdocs/Discrete_Fourier_transform/beginning_dft.ipynb
 
   # - caption: User documentation
   #   chapters:
