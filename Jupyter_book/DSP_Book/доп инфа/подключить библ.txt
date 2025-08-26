@@ -50,3 +50,31 @@ from dsp_lib.signal_generators import gen_sin, gen_cos
 
 # Пример использования
 signal = gen_sin(amplitude=1.0, frequency=0.05, phase=0, n_samples=100)
+
+
+
+
+еще пример
+############################################################################################
+import sys
+import os
+
+# Получаем текущую директорию ноутбука
+notebook_dir = os.path.dirname(os.path.abspath('beginning_dft.ipynb'))
+# print(f"Директория ноутбука: {notebook_dir}")
+# Вычисляем путь к корню проекта (DSP_Book)
+project_root = os.path.abspath(os.path.join(notebook_dir, '..', '..'))
+# print(f"Корень проекта: {project_root}")
+# Добавляем путь к модулю dsp_lib в системный путь
+if project_root not in sys.path:
+    sys.path.append(project_root)
+# Теперь импортируем нужные функции
+try:
+    from dsp_lib.signal_generators import gen_sin, gen_cos
+    # print("Модуль успешно импортирован!")
+except ImportError as e:
+    # print(f"Ошибка импорта: {e}")
+    # print("Проверьте путь к модулю:")
+    module_path = os.path.join(project_root, 'dsp_lib', 'signal_generators.py')
+    # print(f"Существует ли файл? {os.path.exists(module_path)}")
+############################################################################################
